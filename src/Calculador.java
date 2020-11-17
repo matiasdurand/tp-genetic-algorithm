@@ -10,18 +10,16 @@ public class Calculador {
 
 	//Parametros modificables
 	private final int CANT_COLORES = 23;
-	private final int PENALIDAD = 10;
+	private final int PENALIDAD = 1;
 	private final int TAM_POBLACION = 50;
 	private final int CANT_TORNEOS = 2;
 	private final int CANT_COMPETIDORES = 5;
-	private final float PROB_MUTACION = 1/23;
-	private final int C = 100;
-	private final int F = 6;
+	private final int PROB_MUTACION = 2;
+	private final int F = 4;
 	
 	private int[][] grafo = new int[23][23];
 	private Individuo[] poblacion = new Individuo[TAM_POBLACION];
 	private Individuo masApto;
-	private int ciclosSinMejoras = 0;
 	
 	public void resolver() {
 		inicializarGrafo();
@@ -33,17 +31,19 @@ public class Calculador {
 			Individuo[] seleccionados = seleccionar();
 			
 			Individuo[] individuos = cruzar(seleccionados);
-		
-			if(new Random().nextInt((int) (1/PROB_MUTACION)) == 0) mutar(individuos[2]);
-			if(new Random().nextInt((int) (1/PROB_MUTACION)) == 0) mutar(individuos[3]);
+
+			if(new Random().nextInt(PROB_MUTACION) == 0) mutar(individuos[2]);
+			if(new Random().nextInt(PROB_MUTACION) == 0) mutar(individuos[3]);
 			
 			reemplazar(individuos);
 			
 			guardarMasApto();
+			
+			System.out.println("--------------------------------------------------" );
 		}
-		while ((ciclosSinMejoras < C) && (masApto.aptitud > F));
+		while (masApto.aptitud > F);
 		
-		System.out.println("Solucion final:" + masApto);
+		System.out.println("Solucion final:\n" + masApto);
 	}
 	
 	private void inicializarGrafo() {
@@ -113,7 +113,7 @@ public class Calculador {
 	}
 	
 	private Individuo[] seleccionar() {
-		System.out.println("Seleccionando individuos para reproduccion..");
+		System.out.println("Seleccionando individuos..");
 		
 		Individuo[] seleccionados = new Individuo[CANT_TORNEOS];
 		
@@ -282,59 +282,46 @@ public class Calculador {
 	}
 	
 	private void reemplazar(Individuo[] individuos) {
-		System.out.println("\nReemplazo:");
+		System.out.println("\nReemplazo:\n");
 		
+		Individuo padre1 = individuos[0];
+		Individuo padre2 = individuos[1];
 		Individuo hijo1 = individuos[2];
 		Individuo hijo2 = individuos[3];
 		
+		int indice1 = Arrays.asList(poblacion).indexOf(padre1);
+		int indice2 = Arrays.asList(poblacion).indexOf(padre2);
+	
 		List<Individuo> listaIndividuos = Arrays.asList(individuos);
-		
 		Collections.sort(listaIndividuos);
 		
-		System.out.println("Individuos:");
-		System.out.println(listaIndividuos.get(0));
-		System.out.println(listaIndividuos.get(1));
-		System.out.println(listaIndividuos.get(2));
-		System.out.println(listaIndividuos.get(3) + "\n");
-		
 		if(listaIndividuos.get(0).equals(hijo1) || listaIndividuos.get(0).equals(hijo2)) {
-			int posicionMasDebil = obtenerPosicionMasDebil();
+			if(listaIndividuos.get(2).equals(padre1) || listaIndividuos.get(3).equals(padre1)) {
+				System.out.println(listaIndividuos.get(0) + " reemplaza a " + poblacion[indice1] + "\n");
+				poblacion[indice1] = listaIndividuos.get(0);
+			}
 			
-			System.out.println(listaIndividuos.get(0) + " reemplaza a " + poblacion[posicionMasDebil] + "\n");
-			
-			poblacion[posicionMasDebil] = listaIndividuos.get(0);
-		}
-		
-		if(listaIndividuos.get(1).equals(hijo1) || listaIndividuos.get(1).equals(hijo2)) {
-			int posicionMasDebil = obtenerPosicionMasDebil();
-			
-			System.out.println(listaIndividuos.get(1) + " reemplaza a " + poblacion[posicionMasDebil] + "\n");
-			
-			poblacion[posicionMasDebil] = listaIndividuos.get(1);
-		}
-	}
-	
-	private int obtenerPosicionMasDebil() {
-		int aptitud = 0;
-		int posicion = 0;
-		
-		for(int i=0; i<TAM_POBLACION; i++) {
-			if(poblacion[i].aptitud > aptitud) {
-				aptitud = poblacion[i].aptitud;
-				posicion = i;
+			if(listaIndividuos.get(2).equals(padre2) || listaIndividuos.get(3).equals(padre2)) {
+				System.out.println(listaIndividuos.get(0) + " reemplaza a " + poblacion[indice2] + "\n");
+				poblacion[indice2] = listaIndividuos.get(0);
 			}
 		}
 		
-		return posicion;
+		if(listaIndividuos.get(1).equals(hijo1) || listaIndividuos.get(1).equals(hijo2)) {
+			if(listaIndividuos.get(2).equals(padre1)) {
+				System.out.println(listaIndividuos.get(1) + " reemplaza a " + poblacion[indice1] + "\n");
+				poblacion[indice1] = listaIndividuos.get(1);
+			}
+			
+			if(listaIndividuos.get(3).equals(padre2)) {
+				System.out.println(listaIndividuos.get(1) + " reemplaza a " + poblacion[indice2] + "\n");
+				poblacion[indice2] = listaIndividuos.get(1);
+			}
+		}
 	}
 	
 	private void guardarMasApto() {
 		Individuo masApto = (Individuo) Arrays.asList(poblacion).stream().min(Comparator.naturalOrder()).get();
-		
-		if(!this.masApto.equals(masApto)) {
-			this.masApto = masApto;
-			ciclosSinMejoras = 0;
-		}
-		else ciclosSinMejoras++;
+		if(!this.masApto.equals(masApto)) this.masApto = masApto;
 	}
 }

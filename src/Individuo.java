@@ -13,8 +13,7 @@ public class Individuo implements Comparable<Individuo> {
 
 	@Override
 	public String toString() {
-		return "[cromosoma=" + Arrays.toString(cromosoma) + ", aptitud=" + aptitud + ", generacion="
-				+ generacion + "]";
+		return "cromosoma = " + Arrays.toString(cromosoma);
 	}
 
 	@Override
